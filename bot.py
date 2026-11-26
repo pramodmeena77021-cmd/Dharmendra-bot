@@ -8,7 +8,7 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
-from openai import OpenAi
+from openai import openai
 
 
 # Load keys securely from Render Environment Variables
