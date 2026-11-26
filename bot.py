@@ -1,4 +1,5 @@
 import os
+import asyncio
 import threading
 from collections import deque
 from flask import Flask
@@ -15,10 +16,10 @@ from telegram.ext import (
 )
 
 # ==========================================
-# 1. API KEYS & TOKENS
+# 1. API KEYS & TOKENS (Apni nayi keys yahan daalein)
 # ==========================================
-API_KEY = "AQ.Ab8RN6Ls65bTNw2bJ2witfymeTJtHFR6V5Imep9Vx3gzi3Ejyw"
-BOT_TOKEN = "9172201952:AAFIg6621AcWo1PAB5kSxL7gSUno-SrV7Bk"
+API_KEY = os.environ.get("API_KEY", "APNI_NAYI_GEMINI_API_KEY_YAHAN_DAALEIN")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "APNA_NAYA_BOT_TOKEN_YAHAN_DAALEIN")
 
 # Initialize Google Gemini Client
 client = genai.Client(api_key=API_KEY)
@@ -33,14 +34,13 @@ def home():
     return "NEET Mentor Bot is Live & Running 24/7!"
 
 def run_web():
-    port = int(os.environ.get("PORT", 8080))
-    app_flask.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 10000))
+    app_flask.run(host="0.0.0.0", port=port, use_reloader=False)
 
 # ==========================================
 # 3. MEMORY & LANGUAGE STORAGE
 # ==========================================
 user_languages = {}
-# Har user ki pichli 6 baatein yaad rakhne ke liye
 chat_history = {}
 
 def get_system_prompt(lang: str) -> str:
@@ -121,7 +121,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     bot_username = context.bot.username
 
-    # Group chat mein sirf tab reply kare jab bot ko tag (@mention) kiya jaye ya uske message par reply ho
     if chat_type in ["group", "supergroup"]:
         is_mentioned = f"@{bot_username}" in user_text if bot_username else False
         is_reply_to_bot = (
@@ -142,7 +141,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
     
-    # Pichli baatein context mein jodo
     past_context = "\n".join(chat_history[user_id])
     full_prompt = f"Student Name: {user_name}\nRecent Chat:\n{past_context}\n\nCurrent Message: {user_text}"
 
@@ -157,7 +155,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         reply_text = response.text
         
-        # Memory mein save karo
         chat_history[user_id].append(f"Student: {user_text}")
         chat_history[user_id].append(f"Mentor: {reply_text}")
         
@@ -167,10 +164,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Network glitch aa gaya yaar 😅, ek second baad dobara try kar!")
 
 # ==========================================
-# 5. START APPLICATION
+# 5. START APPLICATION (Event Loop Fixed)
 # ==========================================
-if __name__ == '__main__':
-    # Background mein Flask server chalao taaki Render port error na de
+async def main():
+    # Flask ko daemon thread mein chalao
     threading.Thread(target=run_web, daemon=True).start()
     
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -182,4 +179,12 @@ if __name__ == '__main__':
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("NEET Mentor Bot is running...")
-    app.run_polling()
+    await app.initialize()
+    await app.start()
+    await app.updater.start_polling(drop_pending_updates=True)
+    
+    # Bot ko hamesha chalu rakhne ke liye
+    await asyncio.Event().wait()
+
+if __name__ == '__main__':
+    asyncio.run(main())
