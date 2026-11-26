@@ -1,8 +1,5 @@
 import os
-import asyncio
-import threading
 from collections import deque
-from flask import Flask
 from google import genai
 from google.genai import types
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -25,20 +22,7 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "APNA_NAYA_BOT_TOKEN_YAHAN_DAALEIN")
 client = genai.Client(api_key=API_KEY)
 
 # ==========================================
-# 2. RENDER 24/7 KEEP-ALIVE SERVER
-# ==========================================
-app_flask = Flask(__name__)
-
-@app_flask.route('/')
-def home():
-    return "NEET Mentor Bot is Live & Running 24/7!"
-
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    app_flask.run(host="0.0.0.0", port=port, use_reloader=False)
-
-# ==========================================
-# 3. MEMORY & LANGUAGE STORAGE
+# 2. MEMORY & LANGUAGE STORAGE
 # ==========================================
 user_languages = {}
 chat_history = {}
@@ -64,7 +48,7 @@ Your personality and rules:
 """
 
 # ==========================================
-# 4. BOT COMMANDS & HANDLERS
+# 3. BOT COMMANDS & HANDLERS
 # ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -164,12 +148,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Network glitch aa gaya yaar 😅, ek second baad dobara try kar!")
 
 # ==========================================
-# 5. START APPLICATION (Event Loop Fixed)
+# 4. START APPLICATION
 # ==========================================
-async def main():
-    # Flask ko daemon thread mein chalao
-    threading.Thread(target=run_web, daemon=True).start()
-    
+if __name__ == '__main__':
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     
     app.add_handler(CommandHandler('start', start))
@@ -179,12 +160,4 @@ async def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("NEET Mentor Bot is running...")
-    await app.initialize()
-    await app.start()
-    await app.updater.start_polling(drop_pending_updates=True)
-    
-    # Bot ko hamesha chalu rakhne ke liye
-    await asyncio.Event().wait()
-
-if __name__ == '__main__':
-    asyncio.run(main())
+    app.run_polling(drop_pending_updates=True)
