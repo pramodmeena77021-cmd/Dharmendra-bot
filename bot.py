@@ -4,7 +4,7 @@ from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Messa
 from google import genai
 
 # Gemini client setup (Make sure GEMINI_API_KEY is set in Render Environment Variables)
-client = genai.Client()
+client = genai.Client(api_key="AQ.Ab8RN6Ls65bTNw2bJ2witfymeTJtHFR6V5Imep9Vx3gzi3Ejyw")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I am your friendly NEET tutor. Ask me anything about Biology, Chemistry, or Physics!")
