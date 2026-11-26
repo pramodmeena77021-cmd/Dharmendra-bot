@@ -21,8 +21,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Sorry, abhi jawab dene mein kuch dikkat aa rahi hai. Thodi der baad try karein.")
 
 if __name__ == '__main__':
-    # Telegram Bot Token (Behtar hoga agar aap isse bhi Render ke Environment Variables mein rakhein)
-    TOKEN = os.environ.get("TELEGRAM_TOKEN", "9172201952:AAGm9YIUPqT-zFud8nqU0aVq4j_XlRSgdbA")
+TOKEN="9172201952:AAFIg6621AcWo1PAB5kSxL7gSUno-SrV7Bk"
     
     app = ApplicationBuilder().token(TOKEN).build()
     
