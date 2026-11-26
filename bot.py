@@ -8,14 +8,14 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
-from google import genai
-from google.genai import types
+from OpenAi import OpenAi
+
 
 # Load keys securely from Render Environment Variables
 API_KEY = "AQ.Ab8RN6Ls65bTNw2bJ2witfymeTJtHFR6V5Imep9Vx3gzi3Ejyw"
 BOT_TOKEN = "9172201952:AAFIg6621AcWo1PAB5kSxL7gSUno-SrV7Bk"
 
-client = genai.Client(api_key=API_KEY)
+client = OpenAi(api_key=API_KEY)
 
 # Store user language preferences (Default: Hinglish)
 user_languages = {}
